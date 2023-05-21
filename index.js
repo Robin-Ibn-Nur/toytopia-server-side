@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -19,7 +19,7 @@ app.use(express.json());
 
 // const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.h290xzo.mongodb.net/?retryWrites=true&w=majority`;
 
-// // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 // const client = new MongoClient(uri, {
 //     serverApi: {
 //         version: ServerApiVersion.v1,
@@ -32,16 +32,97 @@ app.use(express.json());
 const uri = 'mongodb://0.0.0.0:27017/'
 const client = new MongoClient(uri);
 
-console.log(client.connect);
 
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
 
-        const booksCollection = client.db("toytopia").collection("blogPost");
-        
-        
+        const toysCollection = client.db("toytopia").collection("toys");
+
+
+        // add toys from Add a toy route
+        app.post('/toys', async (req, res) => {
+            const toys = req.body;
+            console.log(toys);
+            const result = await toysCollection.insertOne(toys);
+            res.send(result);
+        });
+
+
+        // display toys on tab
+        // app.get('/toys', async (req, res) => {
+        //     const query = {};
+        //     const cursor = toysCollection.find(query);
+        //     const toys = await cursor.toArray();
+        //     res.send(toys);
+        // })
+
+
+        // display toys to all toys route
+        app.get('/alltoys', async (req, res) => {
+            const query = {};
+            const cursor = toysCollection.find(query)
+            const toys = await cursor.limit(20).toArray()
+            res.send(toys)
+        })
+
+
+        // display single toy details
+        app.get('/toys/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const singleToy = await toysCollection.findOne(query);
+            res.send(singleToy);
+        })
+
+        // query params
+        app.get('/users', async (req, res) => {
+            let query = {};
+            if (req.query?.sellerEmail) {
+                query = { sellerEmail: req.query.sellerEmail }
+            }
+            const result = await toysCollection.find(query).toArray();
+            res.send(result)
+        })
+
+        // delete user product
+        app.delete('/toys/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await toysCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        // update user pro product
+        app.put('/toys/:id', async (req, res) => {
+            const id = req.params.id;
+            const body = req.body;
+            console.log(body, id);
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    price: body.price,
+                    quantity: body.quantity,
+                    description: body.description,
+                },
+            };
+            const result = await toysCollection.updateOne(filter, updateDoc);
+            console.log(result);
+            res.send(result);
+        });
+
+
+        app.get("/allToysSubCategory/:subcategory", async (req, res) => {
+            const subCategory = await toysCollection
+                .find({
+                    subcategory: req.params.subcategory,
+                })
+                .toArray();
+            console.log(subCategory);
+            res.send(subCategory);
+        });
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Successfully connected to MongoDB!");
