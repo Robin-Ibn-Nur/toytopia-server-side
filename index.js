@@ -44,19 +44,9 @@ async function run() {
         // add toys from Add a toy route
         app.post('/toys', async (req, res) => {
             const toys = req.body;
-            console.log(toys);
             const result = await toysCollection.insertOne(toys);
             res.send(result);
         });
-
-
-        // display toys on tab
-        // app.get('/toys', async (req, res) => {
-        //     const query = {};
-        //     const cursor = toysCollection.find(query);
-        //     const toys = await cursor.toArray();
-        //     res.send(toys);
-        // })
 
 
         // display toys to all toys route
@@ -76,15 +66,35 @@ async function run() {
             res.send(singleToy);
         })
 
-        // query params
-        app.get('/users', async (req, res) => {
+
+        // sellerEmail query and sorting by price
+        app.get('/toys', async (req, res) => {
+            const sortBy = req.query;
+            const sellerEmail = req.query;
             let query = {};
-            if (req.query?.sellerEmail) {
+            if (sellerEmail) {
                 query = { sellerEmail: req.query.sellerEmail }
             }
-            const result = await toysCollection.find(query).toArray();
-            res.send(result)
-        })
+
+            let sortOption = {}; // Default sorting option
+            
+            if (sortBy.sortBy === 'asc') {
+                sortOption = { price: 1 }; // Sort in ascending order
+
+            } else if (sortBy.sortBy === 'desc') {
+                sortOption = { price: -1 }; // Sort in descending order
+
+            }
+            
+            try {
+                const toys = await toysCollection.find(query).sort(sortOption).toArray();
+                res.send(toys);
+            } catch (error) {
+                console.error('Error fetching toys:', error);
+                res.status(500).send('Internal Server Error');
+            }
+        });
+
 
         // delete user product
         app.delete('/toys/:id', async (req, res) => {
@@ -98,7 +108,6 @@ async function run() {
         app.put('/toys/:id', async (req, res) => {
             const id = req.params.id;
             const body = req.body;
-            console.log(body, id);
             const filter = { _id: new ObjectId(id) };
             const updateDoc = {
                 $set: {
@@ -108,20 +117,20 @@ async function run() {
                 },
             };
             const result = await toysCollection.updateOne(filter, updateDoc);
-            console.log(result);
             res.send(result);
         });
 
-
+        // display toys data by subcategory
         app.get("/allToysSubCategory/:subcategory", async (req, res) => {
             const subCategory = await toysCollection
                 .find({
                     subcategory: req.params.subcategory,
                 })
                 .toArray();
-            console.log(subCategory);
             res.send(subCategory);
         });
+
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
