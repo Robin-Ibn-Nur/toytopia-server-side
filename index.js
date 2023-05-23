@@ -77,7 +77,7 @@ async function run() {
             }
 
             let sortOption = {}; // Default sorting option
-            
+
             if (sortBy.sortBy === 'asc') {
                 sortOption = { price: 1 }; // Sort in ascending order
 
@@ -85,7 +85,7 @@ async function run() {
                 sortOption = { price: -1 }; // Sort in descending order
 
             }
-            
+
             try {
                 const toys = await toysCollection.find(query).sort(sortOption).toArray();
                 res.send(toys);
@@ -130,6 +130,40 @@ async function run() {
             res.send(subCategory);
         });
 
+        // search field implement
+
+        app.get("/getToyNameByText/:text", async (req, res) => {
+            const text = req.params.text;
+            const result = await toysCollection
+                .find({
+                    $or: [
+                        { toyName: { $regex: text, $options: "i" } },
+                    ],
+                })
+                .toArray();
+            res.send(result);
+        });
+
+        // app.get('/toys/:search', async (req, res) => {
+        //     try {
+        //         const searchText = req.query;
+        //         console.log(searchText);
+
+
+        //         // Fetch toys by toy name
+        //         // const toysCollection = db.collection('toys');
+        //         // const toys = await toysCollection
+        //         //     .find({ toyName: { $regex: searchText, $options: 'i' } })
+        //         //     .toArray();
+        //         // console.log(toys);
+
+        //         // Send the response with filtered toys data
+        //         // res.send(toys);
+        //     } catch (error) {
+        //         console.error('Error fetching toys by name:', error);
+        //         res.status(500).send('Internal Server Error');
+        //     }
+        // });
 
 
         // Send a ping to confirm a successful connection
