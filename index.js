@@ -29,8 +29,8 @@ app.use(express.json());
 // });
 
 // mongoDB compass
-const uri = 'mongodb://0.0.0.0:27017/'
-const client = new MongoClient(uri);
+// const uri = 'mongodb://0.0.0.0:27017/'
+// const client = new MongoClient(uri);
 
 
 async function run() {
