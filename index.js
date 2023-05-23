@@ -144,28 +144,7 @@ async function run() {
             res.send(result);
         });
 
-        // app.get('/toys/:search', async (req, res) => {
-        //     try {
-        //         const searchText = req.query;
-        //         console.log(searchText);
-
-
-        //         // Fetch toys by toy name
-        //         // const toysCollection = db.collection('toys');
-        //         // const toys = await toysCollection
-        //         //     .find({ toyName: { $regex: searchText, $options: 'i' } })
-        //         //     .toArray();
-        //         // console.log(toys);
-
-        //         // Send the response with filtered toys data
-        //         // res.send(toys);
-        //     } catch (error) {
-        //         console.error('Error fetching toys by name:', error);
-        //         res.status(500).send('Internal Server Error');
-        //     }
-        // });
-
-
+        
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Successfully connected to MongoDB!");
